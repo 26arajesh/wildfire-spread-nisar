@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Train model",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/train.py",
+      "args": ["--config", "configs/default.yaml"],
+      "console": "integratedTerminal"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "ms-python.python",
+    "ms-toolsai.jupyter",
+    "ms-python.black-formatter",
+    "ms-python.isort",
+    "ms-azuretools.vscode-docker",
+    "eamodio.gitlens"
+  ]
+}

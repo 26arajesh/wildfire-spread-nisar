@@ -1,0 +1,17 @@
+numpy
+pandas
+scikit-learn
+xgboost
+torch          # only if using pytorch
+rasterio       # geospatial raster data
+geopandas
+shapely
+matplotlib
+jupyterlab
+dvc
+mlflow         # or wandb
+pytest
+black
+flake8
+ipykernel
+-e .
