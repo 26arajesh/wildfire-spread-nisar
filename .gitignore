@@ -1,0 +1,9 @@
+# .gitignore
+# Ignore data, models, and other non-source files
+/data/
+/models/
+*.pyc
+__pycache__/
+.env
+.DS_Store
+.ipynb_checkpoints/

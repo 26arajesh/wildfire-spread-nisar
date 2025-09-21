@@ -2,14 +2,14 @@ numpy
 pandas
 scikit-learn
 xgboost
-torch          # only if using pytorch
-rasterio       # geospatial raster data
+torch
+rasterio
 geopandas
 shapely
 matplotlib
 jupyterlab
 dvc
-mlflow         # or wandb
+mlflow
 pytest
 black
 flake8

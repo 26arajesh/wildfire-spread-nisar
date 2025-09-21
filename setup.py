@@ -1,27 +1,31 @@
+
 from setuptools import setup, find_packages
-from typing import List
-
-HYPHEN_E_DOT = '-e .'
-def get_requirements(file_path:str)->List[str]:
-    '''
-    This function will return a list of requirements from the given file path.
-    '''
-    requirements=[]
-    with open(file_path) as file_obj:
-        requirements = file_obj.readlines()
-        requirements = [req.replace("\n", "") for req in requirements]
-        
-        if HYPHEN_E_DOT in requirements:
-            requirements.remove(HYPHEN_E_DOT)
-    
-    return requirements
-
 
 setup(
     name='wildfire-spread-nisar',
-    version='0.1',
+    version='0.1.0',
+    description='Wildfire Spread Prediction with NISAR Data',
     author='Aditya Rajesh',
     author_email='the.aditya.rajesh@gmail.com',
-    packages=find_packages(),
-    install_requires=get_requirements('requirements.txt')
+    packages=find_packages(where='src'),
+    package_dir={'': 'src'},
+    install_requires=[
+        'numpy',
+        'pandas',
+        'scikit-learn',
+        'xgboost',
+        'torch',
+        'rasterio',
+        'geopandas',
+        'shapely',
+        'matplotlib',
+        'jupyterlab',
+        'dvc',
+        'mlflow',
+        'pytest',
+        'black',
+        'flake8',
+        'ipykernel',
+    ],
+    python_requires='>=3.8',
 )

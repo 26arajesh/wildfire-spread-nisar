@@ -2,11 +2,18 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Train model",
+      "name": "Train Model",
       "type": "python",
       "request": "launch",
       "program": "${workspaceFolder}/src/train.py",
-      "args": ["--config", "configs/default.yaml"],
+      "args": [],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Run Notebook",
+      "type": "jupyter",
+      "request": "launch",
+      "notebook": "${workspaceFolder}/notebooks/",
       "console": "integratedTerminal"
     }
   ]
