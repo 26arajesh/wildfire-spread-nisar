@@ -1,0 +1,28 @@
+Metadata-Version: 2.4
+Name: wildfire-spread-nisar
+Version: 0.1.0
+Summary: Wildfire Spread Prediction with NISAR Data
+Author: Aditya Rajesh
+Author-email: the.aditya.rajesh@gmail.com
+Requires-Python: >=3.8
+Requires-Dist: numpy
+Requires-Dist: pandas
+Requires-Dist: scikit-learn
+Requires-Dist: xgboost
+Requires-Dist: torch
+Requires-Dist: rasterio
+Requires-Dist: geopandas
+Requires-Dist: shapely
+Requires-Dist: matplotlib
+Requires-Dist: jupyterlab
+Requires-Dist: dvc
+Requires-Dist: mlflow
+Requires-Dist: pytest
+Requires-Dist: black
+Requires-Dist: flake8
+Requires-Dist: ipykernel
+Dynamic: author
+Dynamic: author-email
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
