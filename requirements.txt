@@ -17,4 +17,5 @@ black
 flake8
 ipykernel
 tensorflow
+pygridmet
 -e .
