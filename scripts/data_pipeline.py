@@ -452,8 +452,7 @@ def download_sar_data_asf(
     grid_transform: object,
     target_crs: str,
     output_path: Path,
-    earthdata_username: Optional[str] = None,
-    earthdata_password: Optional[str] = None,
+    earthdata_token: Optional[str] = None,
 ) -> bool:
     """
     Download SAR satellite data from Alaska Satellite Facility (ASF).
@@ -472,8 +471,7 @@ def download_sar_data_asf(
         grid_transform: Rasterio transform
         target_crs: Target CRS
         output_path: Path to save satellite.zarr
-        earthdata_username: NASA Earthdata username
-        earthdata_password: NASA Earthdata password
+        earthdata_token: NASA Earthdata token
 
     Returns:
         True if successful, False otherwise
@@ -486,14 +484,16 @@ def download_sar_data_asf(
     if not check_library("asf_search", "SAR data"):
         return False
 
-    # Check credentials
-    username = earthdata_username or os.getenv("EARTHDATA_USERNAME")
-    password = earthdata_password or os.getenv("EARTHDATA_PASSWORD")
+    # Check credentials: ASF downloads use NASA Earthdata Login (same account for all NASA data).
+    token = os.getenv("EARTHDATA_TOKEN")
 
-    if not username or not password:
+    if token:
+        session = asf.ASFSession().auth_with_token(token.strip())
+    else:
         logger.error("NASA Earthdata credentials not provided")
-        logger.error("Set EARTHDATA_USERNAME and EARTHDATA_PASSWORD env vars")
-        logger.error("Or pass as arguments")
+        logger.error(
+            "  • EARTHDATA_TOKEN=your_token  (generate at https://urs.earthdata.nasa.gov/profile)"
+        )
         logger.error("Register at: https://urs.earthdata.nasa.gov/users/new")
         return False
 
@@ -542,9 +542,6 @@ def download_sar_data_asf(
                 grid_shape, grid_transform, target_crs, output_path, start_date
             )
             return True
-
-        # Authenticate (ASFSession.auth_with_creds per ASF docs)
-        session = asf.ASFSession().auth_with_creds(username, password)
 
         # Download to temporary directory
         temp_dir.mkdir(exist_ok=True)
@@ -840,8 +837,7 @@ class WildfireDataProcessor:
         end_date: str,
         bounds: Tuple[float, float, float, float],
         output_dir: str,
-        earthdata_username: Optional[str] = None,
-        earthdata_password: Optional[str] = None,
+        earthdata_token: Optional[str] = None,
         opentopo_api_key: Optional[str] = None,
     ):
         """
@@ -853,8 +849,7 @@ class WildfireDataProcessor:
             end_date: End date (YYYY-MM-DD)
             bounds: (west, south, east, north) in WGS84
             output_dir: Directory to save processed data
-            earthdata_username: NASA Earthdata username
-            earthdata_password: NASA Earthdata password
+            earthdata_token: NASA Earthdata bearer token
             opentopo_api_key: OpenTopography API key
         """
         self.fire_name = fire_name
@@ -864,8 +859,7 @@ class WildfireDataProcessor:
         self.output_dir = Path(output_dir)
 
         # Store credentials
-        self.earthdata_username = earthdata_username
-        self.earthdata_password = earthdata_password
+        self.earthdata_token = earthdata_token
         self.opentopo_api_key = opentopo_api_key
 
         # Create output directory
@@ -959,8 +953,7 @@ class WildfireDataProcessor:
                 self.grid_transform,
                 Config.TARGET_CRS,
                 self.output_dir / "satellite.zarr",
-                self.earthdata_username,
-                self.earthdata_password,
+                self.earthdata_token,
             )
         except Exception as e:
             logger.error(f"Satellite processing failed: {e}")
@@ -1019,18 +1012,18 @@ Examples:
       --start-date "2018-11-08" \\
       --end-date "2018-11-25" \\
       --bounds -121.9 39.5 -121.0 40.0 \\
-      --earthdata-username YOUR_USERNAME \\
-      --earthdata-password YOUR_PASSWORD \\
+      --earthdata-token YOUR_TOKEN \\
       --opentopo-api-key YOUR_API_KEY \\
       --output-dir processed/camp_fire_2018
 
 Environment Variables (recommended for credentials):
-  EARTHDATA_USERNAME      NASA Earthdata username
-  EARTHDATA_PASSWORD      NASA Earthdata password
+  EARTHDATA_TOKEN         NASA Earthdata bearer token (preferred; generate at urs.earthdata.nasa.gov/profile)
   OPENTOPOGRAPHY_API_KEY  OpenTopography API key
 
+Note: ASF SAR downloads use NASA Earthdata Login (same account). No separate ASF username.
+
 Get credentials:
-  - Earthdata: https://urs.earthdata.nasa.gov/users/new
+  - Earthdata: https://urs.earthdata.nasa.gov/users/new (token at Profile → Generate Token)
   - OpenTopography: https://portal.opentopography.org/requestService
   - Earth Engine: Run 'earthengine authenticate'
         """,
@@ -1060,12 +1053,8 @@ Get credentials:
 
     # Optional credentials
     parser.add_argument(
-        "--earthdata-username",
-        help="NASA Earthdata username (or set EARTHDATA_USERNAME)",
-    )
-    parser.add_argument(
-        "--earthdata-password",
-        help="NASA Earthdata password (or set EARTHDATA_PASSWORD)",
+        "--earthdata-token",
+        help="NASA Earthdata token (or set EARTHDATA_TOKEN)",
     )
     parser.add_argument(
         "--opentopo-api-key",
@@ -1081,8 +1070,7 @@ Get credentials:
         end_date=args.end_date,
         bounds=tuple(args.bounds),
         output_dir=args.output_dir,
-        earthdata_username=args.earthdata_username,
-        earthdata_password=args.earthdata_password,
+        earthdata_token=args.earthdata_token,
         opentopo_api_key=args.opentopo_api_key,
     )
 
