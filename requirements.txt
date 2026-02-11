@@ -22,5 +22,5 @@ python-dotenv
 xarray
 rioxarray
 # Pipeline optional (install if running data_pipeline.py):
-# earthengine-api geemap asf-search
+ earthengine-api geemap asf-search
 -e .
