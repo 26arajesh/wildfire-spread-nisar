@@ -1,12 +1,18 @@
-# .gitignore
-# Ignore data, models, and other non-source files
-/data/
-/models/
-*.pyc
-__pycache__/
+# Secrets / local config
 .env
 .env.local
+
+# Python artifacts
+*.pyc
+__pycache__/
+.venv/
+
+# OS / editors
 .DS_Store
 .vscode/
+.cursor/
 .ipynb_checkpoints/
-QUICKSTART.md
+
+# Generated outputs
+processed/
+data/

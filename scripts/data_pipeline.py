@@ -713,9 +713,7 @@ def download_topography(
 
     if not api_key:
         logger.error("OpenTopography API key not provided")
-        logger.error(x
-            "Get free key at: https://portal.opentopography.org/requestService"
-        )
+        logger.error("Get free key at: https://portal.opentopography.org/requestService")
         logger.error("Set OPENTOPOGRAPHY_API_KEY env var or pass as argument")
         return False
 

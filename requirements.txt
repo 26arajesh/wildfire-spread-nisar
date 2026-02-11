@@ -1,26 +1,11 @@
-numpy>=1.19.0
-pandas>=1.3.0
-scikit-learn
-xgboost
-torch>=1.9.0
-torchvision>=0.10.0
-pillow>=8.0.0
-rasterio
-geopandas
-shapely
-matplotlib
-jupyterlab
-dvc
-mlflow
-pytest
-black
-flake8
-ipykernel
-tensorflow
-pygridmet
-python-dotenv
+numpy
 xarray
 rioxarray
-# Pipeline optional (install if running data_pipeline.py):
- earthengine-api geemap asf-search
--e .
+rasterio
+shapely
+pygridmet
+python-dotenv
+earthengine-api
+geemap
+asf-search
+requests
