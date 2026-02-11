@@ -1,5 +1,7 @@
 README.md
 setup.py
+src/data/__init__.py
+src/data/dataset.py
 src/wildfire_spread_nisar.egg-info/PKG-INFO
 src/wildfire_spread_nisar.egg-info/SOURCES.txt
 src/wildfire_spread_nisar.egg-info/dependency_links.txt

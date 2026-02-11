@@ -5,6 +5,7 @@
 *.pyc
 __pycache__/
 .env
+.env.local
 .DS_Store
 .vscode/
 .ipynb_checkpoints/

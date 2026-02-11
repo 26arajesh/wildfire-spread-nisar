@@ -452,7 +452,6 @@ def download_sar_data_asf(
     grid_transform: object,
     target_crs: str,
     output_path: Path,
-    earthdata_token: Optional[str] = None,
 ) -> bool:
     """
     Download SAR satellite data from Alaska Satellite Facility (ASF).
@@ -463,6 +462,8 @@ def download_sar_data_asf(
     NISAR is used for fires from November 2025 onwards.
     Sentinel-1 is used for earlier fires.
 
+    Authentication: set EARTHDATA_TOKEN in environment (NASA Earthdata bearer token).
+
     Args:
         bounds_wgs84: Bounding box in WGS84
         start_date: Start date
@@ -471,7 +472,6 @@ def download_sar_data_asf(
         grid_transform: Rasterio transform
         target_crs: Target CRS
         output_path: Path to save satellite.zarr
-        earthdata_token: NASA Earthdata token
 
     Returns:
         True if successful, False otherwise
@@ -484,18 +484,13 @@ def download_sar_data_asf(
     if not check_library("asf_search", "SAR data"):
         return False
 
-    # Check credentials: ASF downloads use NASA Earthdata Login (same account for all NASA data).
     token = os.getenv("EARTHDATA_TOKEN")
-
-    if token:
-        session = asf.ASFSession().auth_with_token(token.strip())
-    else:
-        logger.error("NASA Earthdata credentials not provided")
-        logger.error(
-            "  • EARTHDATA_TOKEN=your_token  (generate at https://urs.earthdata.nasa.gov/profile)"
-        )
-        logger.error("Register at: https://urs.earthdata.nasa.gov/users/new")
+    if not token or not token.strip():
+        logger.error("EARTHDATA_TOKEN not set. Set it in .env or environment.")
+        logger.error("Generate a token at: https://urs.earthdata.nasa.gov/profile")
         return False
+
+    session = asf.ASFSession().auth_with_token(token.strip())
 
     # Determine which satellite to use (ASF: dataset + processingLevel per docs)
     use_nisar = should_use_nisar(start_date)
@@ -542,6 +537,8 @@ def download_sar_data_asf(
                 grid_shape, grid_transform, target_crs, output_path, start_date
             )
             return True
+
+        # Session already created above (token or username/password)
 
         # Download to temporary directory
         temp_dir.mkdir(exist_ok=True)
@@ -716,7 +713,7 @@ def download_topography(
 
     if not api_key:
         logger.error("OpenTopography API key not provided")
-        logger.error(
+        logger.error(x
             "Get free key at: https://portal.opentopography.org/requestService"
         )
         logger.error("Set OPENTOPOGRAPHY_API_KEY env var or pass as argument")
@@ -837,7 +834,6 @@ class WildfireDataProcessor:
         end_date: str,
         bounds: Tuple[float, float, float, float],
         output_dir: str,
-        earthdata_token: Optional[str] = None,
         opentopo_api_key: Optional[str] = None,
     ):
         """
@@ -849,17 +845,13 @@ class WildfireDataProcessor:
             end_date: End date (YYYY-MM-DD)
             bounds: (west, south, east, north) in WGS84
             output_dir: Directory to save processed data
-            earthdata_token: NASA Earthdata bearer token
-            opentopo_api_key: OpenTopography API key
+            opentopo_api_key: OpenTopography API key (or set OPENTOPOGRAPHY_API_KEY)
         """
         self.fire_name = fire_name
         self.start_date = datetime.strptime(start_date, "%Y-%m-%d")
         self.end_date = datetime.strptime(end_date, "%Y-%m-%d")
         self.bounds_wgs84 = bounds
         self.output_dir = Path(output_dir)
-
-        # Store credentials
-        self.earthdata_token = earthdata_token
         self.opentopo_api_key = opentopo_api_key
 
         # Create output directory
@@ -953,7 +945,6 @@ class WildfireDataProcessor:
                 self.grid_transform,
                 Config.TARGET_CRS,
                 self.output_dir / "satellite.zarr",
-                self.earthdata_token,
             )
         except Exception as e:
             logger.error(f"Satellite processing failed: {e}")
@@ -998,34 +989,26 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Basic usage with environment variables for credentials
-  python process_wildfire_data.py \\
+  # Basic usage (credentials from .env)
+  python scripts/data_pipeline.py \\
       --fire-name "park_fire_2024" \\
       --start-date "2024-07-24" \\
       --end-date "2024-08-10" \\
       --bounds -122.0 39.5 -121.0 40.5 \\
       --output-dir processed/park_fire_2024
 
-  # With explicit credentials
-  python process_wildfire_data.py \\
+  # Camp Fire 2018 example (set EARTHDATA_TOKEN and OPENTOPOGRAPHY_API_KEY in .env)
+  python scripts/data_pipeline.py \\
       --fire-name "camp_fire_2018" \\
       --start-date "2018-11-08" \\
-      --end-date "2018-11-25" \\
+      --end-date "2018-11-21" \\
       --bounds -121.9 39.5 -121.0 40.0 \\
-      --earthdata-token YOUR_TOKEN \\
-      --opentopo-api-key YOUR_API_KEY \\
       --output-dir processed/camp_fire_2018
 
-Environment Variables (recommended for credentials):
-  EARTHDATA_TOKEN         NASA Earthdata bearer token (preferred; generate at urs.earthdata.nasa.gov/profile)
+Environment variables (use .env or export):
+  EARTHDATA_TOKEN         NASA Earthdata bearer token (https://urs.earthdata.nasa.gov/profile)
   OPENTOPOGRAPHY_API_KEY  OpenTopography API key
-
-Note: ASF SAR downloads use NASA Earthdata Login (same account). No separate ASF username.
-
-Get credentials:
-  - Earthdata: https://urs.earthdata.nasa.gov/users/new (token at Profile → Generate Token)
-  - OpenTopography: https://portal.opentopography.org/requestService
-  - Earth Engine: Run 'earthengine authenticate'
+  GEE: run 'earthengine authenticate' once
         """,
     )
 
@@ -1051,11 +1034,7 @@ Get credentials:
         "--output-dir", required=True, help="Output directory for processed data"
     )
 
-    # Optional credentials
-    parser.add_argument(
-        "--earthdata-token",
-        help="NASA Earthdata token (or set EARTHDATA_TOKEN)",
-    )
+    # Optional (otherwise from env / .env)
     parser.add_argument(
         "--opentopo-api-key",
         help="OpenTopography API key (or set OPENTOPOGRAPHY_API_KEY)",
@@ -1063,14 +1042,12 @@ Get credentials:
 
     args = parser.parse_args()
 
-    # Create and run processor
     processor = WildfireDataProcessor(
         fire_name=args.fire_name,
         start_date=args.start_date,
         end_date=args.end_date,
         bounds=tuple(args.bounds),
         output_dir=args.output_dir,
-        earthdata_token=args.earthdata_token,
         opentopo_api_key=args.opentopo_api_key,
     )
 
